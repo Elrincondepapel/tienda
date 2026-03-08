@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Tienda de Tarjetas</title>
+
+<style>
+
+body{
+font-family: Arial;
+background:#f5f5f5;
+margin:0;
+}
+
+header{
+background:#ff6b81;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+gap:20px;
+padding:20px;
+}
+
+.producto{
+background:white;
+padding:15px;
+border-radius:10px;
+box-shadow:0 3px 8px rgba(0,0,0,0.1);
+text-align:center;
+}
+
+.producto img{
+width:100%;
+border-radius:10px;
+}
+
+button{
+background:#25D366;
+color:white;
+border:none;
+padding:10px;
+border-radius:5px;
+cursor:pointer;
+margin-top:10px;
+}
+
+input{
+width:50px;
+padding:5px;
+}
+
+#carrito{
+position:fixed;
+right:0;
+top:0;
+width:300px;
+height:100%;
+background:white;
+box-shadow:-3px 0 10px rgba(0,0,0,0.1);
+padding:20px;
+overflow:auto;
+}
+
+#carrito h2{
+margin-top:0;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+<h1>Tarjetas de Cumpleaños 🎂</h1>
+<p>Catálogo</p>
+</header>
+
+<div class="container" id="productos"></div>
+
+<div id="carrito">
+<h2>Carrito</h2>
+
+<ul id="listaCarrito"></ul>
+
+<button onclick="enviarPedido()">Enviar pedido por WhatsApp</button>
+
+</div>
+
+<script>
+
+const telefono="5493813019415"
+
+let carrito=[]
+
+const productos=[
+
+{nombre:"Tarjeta Cumple Globos",imagen:"https://via.placeholder.com/200"},
+{nombre:"Tarjeta Cumple Tortita",imagen:"https://via.placeholder.com/200"},
+{nombre:"Tarjeta Feliz Día",imagen:"https://via.placeholder.com/200"},
+{nombre:"Tarjeta Cumple Velitas",imagen:"https://via.placeholder.com/200"}
+
+]
+
+// puedes agregar 100 o más productos aquí
+
+const contenedor=document.getElementById("productos")
+
+productos.forEach((p,i)=>{
+
+contenedor.innerHTML+=`
+
+<div class="producto">
+
+<img src="${p.imagen}">
+
+<h3>${p.nombre}</h3>
+
+<input type="number" id="cant${i}" value="1" min="1">
+
+<br>
+
+<button onclick="agregar(${i})">Agregar</button>
+
+</div>
+
+`
+
+})
+
+function agregar(i){
+
+let cantidad=document.getElementById("cant"+i).value
+
+carrito.push({
+nombre:productos[i].nombre,
+cantidad:cantidad
+})
+
+mostrarCarrito()
+
+}
+
+function mostrarCarrito(){
+
+let lista=document.getElementById("listaCarrito")
+
+lista.innerHTML=""
+
+carrito.forEach(p=>{
+
+lista.innerHTML+=`<li>${p.nombre} x${p.cantidad}</li>`
+
+})
+
+}
+
+function enviarPedido(){
+
+let mensaje="Hola, quiero hacer este pedido:%0A%0A"
+
+carrito.forEach(p=>{
+
+mensaje+=`${p.nombre} x${p.cantidad}%0A`
+
+})
+
+let url=`https://wa.me/${telefono}?text=${mensaje}`
+
+window.open(url)
+
+}
+
+</script>
+
+</body>
+</html>
