@@ -2,23 +2,48 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Tienda</title>
+<title>Tienda de Tarjetas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 
 body{
 margin:0;
 font-family:Arial;
-background:#f5f5f5;
+background:#f3f3f3;
 }
 
-/* FOTO DE PORTADA */
+/* HERO */
 
 .hero{
-height:350px;
-background:url("fondo.jpg");
-background-size:cover;
-background-position:center;
+height:380px;
+background:url("fondo.jpg") center/cover;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.slider{
+position:relative;
+width:90%;
+max-width:1000px;
+height:240px;
+overflow:hidden;
+border-radius:15px;
+box-shadow:0 10px 25px rgba(0,0,0,0.4);
+}
+
+.slide{
+position:absolute;
+width:100%;
+height:100%;
+object-fit:cover;
+opacity:0;
+transition:opacity 1s;
+}
+
+.slide.active{
+opacity:1;
 }
 
 /* PRODUCTOS */
@@ -27,40 +52,54 @@ background-position:center;
 display:flex;
 flex-wrap:wrap;
 justify-content:center;
-padding:20px;
+gap:25px;
+padding:30px;
 }
 
 .card{
 background:white;
 width:220px;
-margin:10px;
-border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,0.2);
+border-radius:12px;
+overflow:hidden;
+box-shadow:0 6px 15px rgba(0,0,0,0.15);
 text-align:center;
-padding:10px;
 }
 
 .card img{
 width:100%;
-border-radius:10px;
+cursor:pointer;
+}
+
+.card h3{
+margin:10px;
+}
+
+.card p{
+margin:5px;
+font-weight:bold;
 }
 
 .card button{
+margin:10px;
+padding:8px 16px;
+border-radius:20px;
+border:1px solid #25D366;
+background:white;
+color:#25D366;
+cursor:pointer;
+}
+
+.card button:hover{
 background:#25D366;
 color:white;
-border:none;
-padding:10px;
-margin-top:10px;
-border-radius:5px;
-cursor:pointer;
 }
 
 /* FORMULARIO */
 
 .formulario{
-background:white;
 max-width:500px;
-margin:30px auto;
+margin:20px auto;
+background:white;
 padding:20px;
 border-radius:10px;
 box-shadow:0 0 10px rgba(0,0,0,0.2);
@@ -75,7 +114,7 @@ border-radius:5px;
 border:1px solid #ccc;
 }
 
-/* BOTON CARRITO */
+/* CARRITO */
 
 .botonCarrito{
 position:fixed;
@@ -84,13 +123,18 @@ right:20px;
 background:#25D366;
 color:white;
 border:none;
-padding:15px;
-border-radius:50px;
-font-size:16px;
+padding:15px 20px;
+border-radius:40px;
 cursor:pointer;
 }
 
-/* PANEL CARRITO */
+.contador{
+background:red;
+color:white;
+border-radius:50%;
+padding:4px 8px;
+margin-left:5px;
+}
 
 .carritoPanel{
 position:fixed;
@@ -99,7 +143,7 @@ top:0;
 width:350px;
 height:100%;
 background:white;
-box-shadow:-3px 0 10px rgba(0,0,0,0.2);
+box-shadow:-4px 0 10px rgba(0,0,0,0.3);
 padding:20px;
 transition:0.4s;
 overflow:auto;
@@ -109,33 +153,43 @@ overflow:auto;
 right:0;
 }
 
-.cerrar{
-font-size:20px;
-cursor:pointer;
-float:right;
-}
+/* ADMIN PANEL */
 
-/* RESUMEN */
-
-.resumen{
+.admin{
 background:white;
 max-width:600px;
-margin:30px auto;
+margin:40px auto;
 padding:20px;
 border-radius:10px;
 box-shadow:0 0 10px rgba(0,0,0,0.2);
-display:none;
 }
 
-.resumen button{
-background:#25D366;
-color:white;
-border:none;
-padding:12px;
+.dropzone{
+border:2px dashed #aaa;
+padding:30px;
+text-align:center;
 margin-top:10px;
-border-radius:5px;
 cursor:pointer;
+}
+
+/* MODAL IMAGEN */
+
+.modal{
+display:none;
+position:fixed;
+z-index:10;
+left:0;
+top:0;
 width:100%;
+height:100%;
+background:rgba(0,0,0,0.85);
+justify-content:center;
+align-items:center;
+}
+
+.modal img{
+max-width:85%;
+max-height:85%;
 }
 
 </style>
@@ -143,102 +197,185 @@ width:100%;
 
 <body>
 
-<div class="hero"></div>
+<div class="hero">
 
-<!-- PRODUCTOS -->
-
-<div class="container">
-
-<div class="card">
-<img src="producto1.jpg">
-<h3>Tarjeta 1</h3>
-<button onclick="agregar('Tarjeta 1')">Agregar</button>
-</div>
-
-<div class="card">
-<img src="producto2.jpg">
-<h3>Tarjeta 2</h3>
-<button onclick="agregar('Tarjeta 2')">Agregar</button>
-</div>
-
-<div class="card">
-<img src="producto3.jpg">
-<h3>Tarjeta 3</h3>
-<button onclick="agregar('Tarjeta 3')">Agregar</button>
+<div class="slider">
+<img src="slide1.jpg" class="slide active">
+<img src="slide2.jpg" class="slide">
+<img src="slide3.jpg" class="slide">
 </div>
 
 </div>
 
-<!-- FORMULARIO -->
+<div class="container" id="productos"></div>
 
 <div class="formulario">
 
 <input type="text" id="nombre" placeholder="Nombre">
-
 <input type="text" id="apellido" placeholder="Apellido">
 
 <label>Fecha de evento</label>
 <input type="date" id="fecha">
 
-<select id="entrega" onchange="direccionMostrar()">
+<select id="entrega">
 <option value="">Forma de entrega</option>
-<option>Retiro en local</option>
-<option>Envío a domicilio</option>
+<option value="Retiro">Retiro</option>
+<option value="Envio">Envío</option>
 </select>
 
-<div id="direccionBox" style="display:none">
 <input type="text" id="direccion" placeholder="Dirección">
-</div>
 
 </div>
-
-<!-- BOTON CARRITO -->
 
 <button class="botonCarrito" onclick="abrirCarrito()">
-🛒 Carrito
+🛒 Carrito <span class="contador" id="contador">0</span>
 </button>
 
-<!-- PANEL CARRITO -->
-
 <div class="carritoPanel" id="carrito">
-
-<span class="cerrar" onclick="cerrarCarrito()">✖</span>
 
 <h2>Carrito</h2>
 
 <ul id="lista"></ul>
 
-<button onclick="verResumen()">Ver resumen</button>
+<button onclick="enviarWhats()">Enviar pedido</button>
 
 </div>
 
-<!-- RESUMEN -->
+<!-- PANEL ADMIN -->
 
-<div class="resumen" id="resumen">
+<div class="admin">
 
-<h2>Resumen del pedido</h2>
+<h2>Panel administrador</h2>
 
-<div id="datos"></div>
+<input id="prodNombre" placeholder="Nombre producto">
+<input id="prodPrecio" placeholder="Precio">
 
-<button onclick="enviarWhats()">Enviar pedido por WhatsApp</button>
+<div class="dropzone" id="dropzone">
+Arrastra la imagen aquí
+</div>
 
+<button onclick="guardarProducto()">Agregar producto</button>
+
+</div>
+
+<div class="modal" id="modal" onclick="cerrarImagen()">
+<img id="imgGrande">
 </div>
 
 <script>
 
+/* SLIDER */
+
+let slides=document.querySelectorAll(".slide")
+let index=0
+
+setInterval(()=>{
+slides[index].classList.remove("active")
+index++
+if(index>=slides.length) index=0
+slides[index].classList.add("active")
+},4000)
+
+/* PRODUCTOS */
+
+let productos=JSON.parse(localStorage.getItem("productos"))||[]
 let carrito=[]
+let imagenActual=""
 
-function agregar(producto){
+/* MOSTRAR PRODUCTOS */
 
-carrito.push(producto)
+function mostrarProductos(){
+
+let cont=document.getElementById("productos")
+cont.innerHTML=""
+
+productos.forEach((p,i)=>{
+
+cont.innerHTML+=`
+
+<div class="card">
+
+<img src="${p.imagen}" onclick="verImagen('${p.imagen}')">
+
+<h3>${p.nombre}</h3>
+
+<p>$${p.precio}</p>
+
+<button onclick="agregar('${p.nombre} - $${p.precio}')">Agregar</button>
+
+</div>
+
+`
+
+})
+
+}
+
+mostrarProductos()
+
+/* DRAG IMAGEN */
+
+let dropzone=document.getElementById("dropzone")
+
+dropzone.addEventListener("dragover",e=>{
+e.preventDefault()
+})
+
+dropzone.addEventListener("drop",e=>{
+
+e.preventDefault()
+
+let file=e.dataTransfer.files[0]
+
+let reader=new FileReader()
+
+reader.onload=function(evt){
+
+imagenActual=evt.target.result
+dropzone.innerHTML="<img src='"+imagenActual+"' width='120'>"
+
+}
+
+reader.readAsDataURL(file)
+
+})
+
+/* GUARDAR PRODUCTO */
+
+function guardarProducto(){
+
+let nombre=document.getElementById("prodNombre").value
+let precio=document.getElementById("prodPrecio").value
+
+let prod={
+nombre:nombre,
+precio:precio,
+imagen:imagenActual
+}
+
+productos.push(prod)
+
+localStorage.setItem("productos",JSON.stringify(productos))
+
+mostrarProductos()
+
+}
+
+/* CARRITO */
+
+function agregar(prod){
+
+carrito.push(prod)
 
 let lista=document.getElementById("lista")
 
-let li=document.createElement("li")
+lista.innerHTML=""
 
-li.textContent=producto
+carrito.forEach(p=>{
+lista.innerHTML+="<li>"+p+"</li>"
+})
 
-lista.appendChild(li)
+document.getElementById("contador").innerText=carrito.length
 
 }
 
@@ -246,57 +383,39 @@ function abrirCarrito(){
 document.getElementById("carrito").classList.add("activo")
 }
 
-function cerrarCarrito(){
-document.getElementById("carrito").classList.remove("activo")
-}
+/* WHATSAPP */
 
-function direccionMostrar(){
-
-let entrega=document.getElementById("entrega").value
-
-if(entrega=="Envío a domicilio"){
-document.getElementById("direccionBox").style.display="block"
-}else{
-document.getElementById("direccionBox").style.display="none"
-}
-
-}
-
-function verResumen(){
+function enviarWhats(){
 
 let nombre=document.getElementById("nombre").value
 let apellido=document.getElementById("apellido").value
 let fecha=document.getElementById("fecha").value
-let entrega=document.getElementById("entrega").value
-let direccion=document.getElementById("direccion").value
 
-let productos=carrito.join(", ")
+let texto="Cliente: "+nombre+" "+apellido+"\n"
+texto+="Fecha evento: "+fecha+"\n\n"
+texto+="Productos:\n"
 
-let texto=
-`
-<b>Cliente:</b> ${nombre} ${apellido}<br>
-<b>Fecha evento:</b> ${fecha}<br>
-<b>Entrega:</b> ${entrega}<br>
-<b>Dirección:</b> ${direccion}<br><br>
-<b>Productos:</b><br>${productos}
-`
+carrito.forEach(p=>{
+texto+=p+"\n"
+})
 
-document.getElementById("datos").innerHTML=texto
-
-document.getElementById("resumen").style.display="block"
-
-cerrarCarrito()
-
-}
-
-function enviarWhats(){
-
-let datos=document.getElementById("datos").innerText
-
-let url="https://wa.me/5493815441312?text="+encodeURIComponent(datos)
+let url="https://wa.me/5493815441312?text="+encodeURIComponent(texto)
 
 window.open(url)
 
+}
+
+/* ZOOM IMAGEN */
+
+function verImagen(src){
+
+document.getElementById("modal").style.display="flex"
+document.getElementById("imgGrande").src=src
+
+}
+
+function cerrarImagen(){
+document.getElementById("modal").style.display="none"
 }
 
 </script>
