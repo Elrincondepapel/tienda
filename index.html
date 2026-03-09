@@ -5,23 +5,29 @@
 <title>Tienda de Tarjetas</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <style>
 
 body{
 margin:0;
 font-family:Arial;
-background:#f3f3f3;
+background:#f2f2f2;
 }
 
 /* HERO */
 
 .hero{
 height:380px;
-background:url("fondo.jpg") center/cover;
+background:url("fondo.jpg");
+background-size:cover;
+background-position:center;
 display:flex;
 align-items:center;
 justify-content:center;
 }
+
+/* SLIDER */
 
 .slider{
 position:relative;
@@ -62,7 +68,11 @@ width:220px;
 border-radius:12px;
 overflow:hidden;
 box-shadow:0 6px 15px rgba(0,0,0,0.15);
-text-align:center;
+transition:0.3s;
+}
+
+.card:hover{
+transform:translateY(-5px);
 }
 
 .card img{
@@ -72,21 +82,18 @@ cursor:pointer;
 
 .card h3{
 margin:10px;
-}
-
-.card p{
-margin:5px;
-font-weight:bold;
+font-size:16px;
 }
 
 .card button{
 margin:10px;
 padding:8px 16px;
-border-radius:20px;
+border-radius:25px;
 border:1px solid #25D366;
 background:white;
 color:#25D366;
 cursor:pointer;
+transition:0.3s;
 }
 
 .card button:hover{
@@ -114,7 +121,7 @@ border-radius:5px;
 border:1px solid #ccc;
 }
 
-/* CARRITO */
+/* BOTON CARRITO */
 
 .botonCarrito{
 position:fixed;
@@ -126,6 +133,7 @@ border:none;
 padding:15px 20px;
 border-radius:40px;
 cursor:pointer;
+font-size:16px;
 }
 
 .contador{
@@ -134,7 +142,10 @@ color:white;
 border-radius:50%;
 padding:4px 8px;
 margin-left:5px;
+font-size:12px;
 }
+
+/* PANEL CARRITO */
 
 .carritoPanel{
 position:fixed;
@@ -153,23 +164,39 @@ overflow:auto;
 right:0;
 }
 
-/* ADMIN PANEL */
+.cerrar{
+font-size:20px;
+cursor:pointer;
+float:right;
+}
 
-.admin{
+.eliminar{
+color:red;
+cursor:pointer;
+margin-left:10px;
+}
+
+/* RESUMEN */
+
+.resumen{
 background:white;
 max-width:600px;
-margin:40px auto;
+margin:30px auto;
 padding:20px;
 border-radius:10px;
 box-shadow:0 0 10px rgba(0,0,0,0.2);
+display:none;
 }
 
-.dropzone{
-border:2px dashed #aaa;
-padding:30px;
-text-align:center;
+.resumen button{
+background:#25D366;
+color:white;
+border:none;
+padding:12px;
 margin-top:10px;
+border-radius:6px;
 cursor:pointer;
+width:100%;
 }
 
 /* MODAL IMAGEN */
@@ -200,9 +227,11 @@ max-height:85%;
 <div class="hero">
 
 <div class="slider">
+
 <img src="slide1.jpg" class="slide active">
 <img src="slide2.jpg" class="slide">
 <img src="slide3.jpg" class="slide">
+
 </div>
 
 </div>
@@ -217,7 +246,7 @@ max-height:85%;
 <label>Fecha de evento</label>
 <input type="date" id="fecha">
 
-<select id="entrega">
+<select id="entrega" onchange="cambiarDireccion()">
 <option value="">Forma de entrega</option>
 <option value="Retiro">Retiro</option>
 <option value="Envio">Envío</option>
@@ -233,28 +262,23 @@ max-height:85%;
 
 <div class="carritoPanel" id="carrito">
 
+<span class="cerrar" onclick="cerrarCarrito()">✖</span>
+
 <h2>Carrito</h2>
 
 <ul id="lista"></ul>
 
+<button onclick="verResumen()">Ver resumen</button>
+
+</div>
+
+<div class="resumen" id="resumen">
+
+<h2>Resumen del pedido</h2>
+
+<pre id="datos"></pre>
+
 <button onclick="enviarWhats()">Enviar pedido</button>
-
-</div>
-
-<!-- PANEL ADMIN -->
-
-<div class="admin">
-
-<h2>Panel administrador</h2>
-
-<input id="prodNombre" placeholder="Nombre producto">
-<input id="prodPrecio" placeholder="Precio">
-
-<div class="dropzone" id="dropzone">
-Arrastra la imagen aquí
-</div>
-
-<button onclick="guardarProducto()">Agregar producto</button>
 
 </div>
 
@@ -270,26 +294,31 @@ let slides=document.querySelectorAll(".slide")
 let index=0
 
 setInterval(()=>{
+
 slides[index].classList.remove("active")
+
 index++
 if(index>=slides.length) index=0
+
 slides[index].classList.add("active")
+
 },4000)
 
 /* PRODUCTOS */
 
-let productos=JSON.parse(localStorage.getItem("productos"))||[]
 let carrito=[]
-let imagenActual=""
 
-/* MOSTRAR PRODUCTOS */
+fetch("productos.xlsx")
+.then(res=>res.arrayBuffer())
+.then(data=>{
 
-function mostrarProductos(){
+let workbook=XLSX.read(data)
+let hoja=workbook.Sheets[workbook.SheetNames[0]]
+let productos=XLSX.utils.sheet_to_json(hoja)
 
 let cont=document.getElementById("productos")
-cont.innerHTML=""
 
-productos.forEach((p,i)=>{
+productos.forEach(p=>{
 
 cont.innerHTML+=`
 
@@ -299,9 +328,7 @@ cont.innerHTML+=`
 
 <h3>${p.nombre}</h3>
 
-<p>$${p.precio}</p>
-
-<button onclick="agregar('${p.nombre} - $${p.precio}')">Agregar</button>
+<button onclick="agregar('${p.nombre}')">Agregar</button>
 
 </div>
 
@@ -309,73 +336,41 @@ cont.innerHTML+=`
 
 })
 
-}
-
-mostrarProductos()
-
-/* DRAG IMAGEN */
-
-let dropzone=document.getElementById("dropzone")
-
-dropzone.addEventListener("dragover",e=>{
-e.preventDefault()
 })
-
-dropzone.addEventListener("drop",e=>{
-
-e.preventDefault()
-
-let file=e.dataTransfer.files[0]
-
-let reader=new FileReader()
-
-reader.onload=function(evt){
-
-imagenActual=evt.target.result
-dropzone.innerHTML="<img src='"+imagenActual+"' width='120'>"
-
-}
-
-reader.readAsDataURL(file)
-
-})
-
-/* GUARDAR PRODUCTO */
-
-function guardarProducto(){
-
-let nombre=document.getElementById("prodNombre").value
-let precio=document.getElementById("prodPrecio").value
-
-let prod={
-nombre:nombre,
-precio:precio,
-imagen:imagenActual
-}
-
-productos.push(prod)
-
-localStorage.setItem("productos",JSON.stringify(productos))
-
-mostrarProductos()
-
-}
-
-/* CARRITO */
 
 function agregar(prod){
 
 carrito.push(prod)
 
+actualizarCarrito()
+
+}
+
+function actualizarCarrito(){
+
 let lista=document.getElementById("lista")
 
 lista.innerHTML=""
 
-carrito.forEach(p=>{
-lista.innerHTML+="<li>"+p+"</li>"
+carrito.forEach((p,i)=>{
+
+lista.innerHTML+=`
+<li>${p}
+<span class="eliminar" onclick="eliminar(${i})">✖</span>
+</li>
+`
+
 })
 
 document.getElementById("contador").innerText=carrito.length
+
+}
+
+function eliminar(i){
+
+carrito.splice(i,1)
+
+actualizarCarrito()
 
 }
 
@@ -383,29 +378,24 @@ function abrirCarrito(){
 document.getElementById("carrito").classList.add("activo")
 }
 
-/* WHATSAPP */
-
-function enviarWhats(){
-
-let nombre=document.getElementById("nombre").value
-let apellido=document.getElementById("apellido").value
-let fecha=document.getElementById("fecha").value
-
-let texto="Cliente: "+nombre+" "+apellido+"\n"
-texto+="Fecha evento: "+fecha+"\n\n"
-texto+="Productos:\n"
-
-carrito.forEach(p=>{
-texto+=p+"\n"
-})
-
-let url="https://wa.me/5493815441312?text="+encodeURIComponent(texto)
-
-window.open(url)
-
+function cerrarCarrito(){
+document.getElementById("carrito").classList.remove("activo")
 }
 
-/* ZOOM IMAGEN */
+function cambiarDireccion(){
+
+let tipo=document.getElementById("entrega").value
+let dir=document.getElementById("direccion")
+
+if(tipo=="Retiro"){
+dir.placeholder="Dirección donde retira"
+}
+
+if(tipo=="Envio"){
+dir.placeholder="Dirección de entrega"
+}
+
+}
 
 function verImagen(src){
 
@@ -416,6 +406,44 @@ document.getElementById("imgGrande").src=src
 
 function cerrarImagen(){
 document.getElementById("modal").style.display="none"
+}
+
+function verResumen(){
+
+let nombre=document.getElementById("nombre").value
+let apellido=document.getElementById("apellido").value
+let fecha=document.getElementById("fecha").value
+let entrega=document.getElementById("entrega").value
+let direccion=document.getElementById("direccion").value
+
+let productos=carrito.join(", ")
+
+let texto=`
+Cliente: ${nombre} ${apellido}
+Fecha evento: ${fecha}
+Entrega: ${entrega}
+Dirección: ${direccion}
+
+Productos:
+${productos}
+`
+
+document.getElementById("datos").innerText=texto
+
+document.getElementById("resumen").style.display="block"
+
+cerrarCarrito()
+
+}
+
+function enviarWhats(){
+
+let datos=document.getElementById("datos").innerText
+
+let url="https://wa.me/5493815441312?text="+encodeURIComponent(datos)
+
+window.open(url)
+
 }
 
 </script>
