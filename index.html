@@ -1,55 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
-<title>Tienda de Tarjetas</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<title>Tienda de Tarjetas</title>
 
 <style>
 
 body{
 margin:0;
 font-family:Arial;
-background:#f2f2f2;
+background:#f4f4f4;
 }
 
 /* HERO */
 
 .hero{
-height:380px;
-background:url("fondo.jpg");
-background-size:cover;
-background-position:center;
-display:flex;
-align-items:center;
-justify-content:center;
-}
-
-/* SLIDER */
-
-.slider{
-position:relative;
-width:90%;
-max-width:1000px;
-height:240px;
-overflow:hidden;
-border-radius:15px;
-box-shadow:0 10px 25px rgba(0,0,0,0.4);
-}
-
-.slide{
-position:absolute;
-width:100%;
-height:100%;
-object-fit:cover;
-opacity:0;
-transition:opacity 1s;
-}
-
-.slide.active{
-opacity:1;
+height:350px;
+background:url("fondo.jpg") center/cover;
 }
 
 /* PRODUCTOS */
@@ -63,16 +33,12 @@ padding:30px;
 }
 
 .card{
-background:white;
 width:220px;
+background:white;
 border-radius:12px;
+box-shadow:0 5px 15px rgba(0,0,0,0.15);
+text-align:center;
 overflow:hidden;
-box-shadow:0 6px 15px rgba(0,0,0,0.15);
-transition:0.3s;
-}
-
-.card:hover{
-transform:translateY(-5px);
 }
 
 .card img{
@@ -85,15 +51,18 @@ margin:10px;
 font-size:16px;
 }
 
+.card p{
+font-weight:bold;
+}
+
 .card button{
 margin:10px;
 padding:8px 16px;
-border-radius:25px;
+border-radius:20px;
 border:1px solid #25D366;
 background:white;
 color:#25D366;
 cursor:pointer;
-transition:0.3s;
 }
 
 .card button:hover{
@@ -105,7 +74,7 @@ color:white;
 
 .formulario{
 max-width:500px;
-margin:20px auto;
+margin:30px auto;
 background:white;
 padding:20px;
 border-radius:10px;
@@ -145,7 +114,7 @@ margin-left:5px;
 font-size:12px;
 }
 
-/* PANEL CARRITO */
+/* CARRITO OCULTO */
 
 .carritoPanel{
 position:fixed;
@@ -154,7 +123,7 @@ top:0;
 width:350px;
 height:100%;
 background:white;
-box-shadow:-4px 0 10px rgba(0,0,0,0.3);
+box-shadow:-4px 0 15px rgba(0,0,0,0.3);
 padding:20px;
 transition:0.4s;
 overflow:auto;
@@ -170,35 +139,6 @@ cursor:pointer;
 float:right;
 }
 
-.eliminar{
-color:red;
-cursor:pointer;
-margin-left:10px;
-}
-
-/* RESUMEN */
-
-.resumen{
-background:white;
-max-width:600px;
-margin:30px auto;
-padding:20px;
-border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,0.2);
-display:none;
-}
-
-.resumen button{
-background:#25D366;
-color:white;
-border:none;
-padding:12px;
-margin-top:10px;
-border-radius:6px;
-cursor:pointer;
-width:100%;
-}
-
 /* MODAL IMAGEN */
 
 .modal{
@@ -209,50 +149,41 @@ left:0;
 top:0;
 width:100%;
 height:100%;
-background:rgba(0,0,0,0.85);
+background:rgba(0,0,0,0.9);
 justify-content:center;
 align-items:center;
 }
 
 .modal img{
-max-width:85%;
-max-height:85%;
+max-width:90%;
+max-height:90%;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<div class="hero">
-
-<div class="slider">
-
-<img src="slide1.jpg" class="slide active">
-<img src="slide2.jpg" class="slide">
-<img src="slide3.jpg" class="slide">
-
-</div>
-
-</div>
+<div class="hero"></div>
 
 <div class="container" id="productos"></div>
 
 <div class="formulario">
 
-<input type="text" id="nombre" placeholder="Nombre">
-<input type="text" id="apellido" placeholder="Apellido">
+<input id="nombre" placeholder="Nombre">
+<input id="apellido" placeholder="Apellido">
 
 <label>Fecha de evento</label>
 <input type="date" id="fecha">
 
-<select id="entrega" onchange="cambiarDireccion()">
+<select id="entrega">
 <option value="">Forma de entrega</option>
 <option value="Retiro">Retiro</option>
 <option value="Envio">Envío</option>
 </select>
 
-<input type="text" id="direccion" placeholder="Dirección">
+<input id="direccion" placeholder="Dirección">
 
 </div>
 
@@ -268,16 +199,6 @@ max-height:85%;
 
 <ul id="lista"></ul>
 
-<button onclick="verResumen()">Ver resumen</button>
-
-</div>
-
-<div class="resumen" id="resumen">
-
-<h2>Resumen del pedido</h2>
-
-<pre id="datos"></pre>
-
 <button onclick="enviarWhats()">Enviar pedido</button>
 
 </div>
@@ -288,33 +209,24 @@ max-height:85%;
 
 <script>
 
-/* SLIDER */
-
-let slides=document.querySelectorAll(".slide")
-let index=0
-
-setInterval(()=>{
-
-slides[index].classList.remove("active")
-
-index++
-if(index>=slides.length) index=0
-
-slides[index].classList.add("active")
-
-},4000)
-
 /* PRODUCTOS */
 
 let carrito=[]
+let productos=[]
 
-fetch("productos.xlsx")
-.then(res=>res.arrayBuffer())
+fetch("productos.json")
+
+.then(res=>res.json())
+
 .then(data=>{
 
-let workbook=XLSX.read(data)
-let hoja=workbook.Sheets[workbook.SheetNames[0]]
-let productos=XLSX.utils.sheet_to_json(hoja)
+productos=data
+
+mostrar()
+
+})
+
+function mostrar(){
 
 let cont=document.getElementById("productos")
 
@@ -328,7 +240,9 @@ cont.innerHTML+=`
 
 <h3>${p.nombre}</h3>
 
-<button onclick="agregar('${p.nombre}')">Agregar</button>
+<p>$${p.precio}</p>
+
+<button onclick="agregar('${p.nombre} - $${p.precio}')">Agregar</button>
 
 </div>
 
@@ -336,29 +250,27 @@ cont.innerHTML+=`
 
 })
 
-})
+}
+
+/* CARRITO */
 
 function agregar(prod){
 
 carrito.push(prod)
 
-actualizarCarrito()
+actualizar()
 
 }
 
-function actualizarCarrito(){
+function actualizar(){
 
 let lista=document.getElementById("lista")
 
 lista.innerHTML=""
 
-carrito.forEach((p,i)=>{
+carrito.forEach(p=>{
 
-lista.innerHTML+=`
-<li>${p}
-<span class="eliminar" onclick="eliminar(${i})">✖</span>
-</li>
-`
+lista.innerHTML+="<li>"+p+"</li>"
 
 })
 
@@ -366,36 +278,46 @@ document.getElementById("contador").innerText=carrito.length
 
 }
 
-function eliminar(i){
-
-carrito.splice(i,1)
-
-actualizarCarrito()
-
-}
-
 function abrirCarrito(){
+
 document.getElementById("carrito").classList.add("activo")
+
 }
 
 function cerrarCarrito(){
+
 document.getElementById("carrito").classList.remove("activo")
-}
-
-function cambiarDireccion(){
-
-let tipo=document.getElementById("entrega").value
-let dir=document.getElementById("direccion")
-
-if(tipo=="Retiro"){
-dir.placeholder="Dirección donde retira"
-}
-
-if(tipo=="Envio"){
-dir.placeholder="Dirección de entrega"
-}
 
 }
+
+/* WHATSAPP */
+
+function enviarWhats(){
+
+let nombre=document.getElementById("nombre").value
+let apellido=document.getElementById("apellido").value
+let fecha=document.getElementById("fecha").value
+let entrega=document.getElementById("entrega").value
+let direccion=document.getElementById("direccion").value
+
+let texto="Cliente: "+nombre+" "+apellido+"\n"
+texto+="Fecha evento: "+fecha+"\n"
+texto+="Entrega: "+entrega+"\n"
+texto+="Direccion: "+direccion+"\n\n"
+
+texto+="Productos:\n"
+
+carrito.forEach(p=>{
+texto+=p+"\n"
+})
+
+let url="https://wa.me/5493815441312?text="+encodeURIComponent(texto)
+
+window.open(url)
+
+}
+
+/* ZOOM IMAGEN */
 
 function verImagen(src){
 
@@ -405,44 +327,8 @@ document.getElementById("imgGrande").src=src
 }
 
 function cerrarImagen(){
+
 document.getElementById("modal").style.display="none"
-}
-
-function verResumen(){
-
-let nombre=document.getElementById("nombre").value
-let apellido=document.getElementById("apellido").value
-let fecha=document.getElementById("fecha").value
-let entrega=document.getElementById("entrega").value
-let direccion=document.getElementById("direccion").value
-
-let productos=carrito.join(", ")
-
-let texto=`
-Cliente: ${nombre} ${apellido}
-Fecha evento: ${fecha}
-Entrega: ${entrega}
-Dirección: ${direccion}
-
-Productos:
-${productos}
-`
-
-document.getElementById("datos").innerText=texto
-
-document.getElementById("resumen").style.display="block"
-
-cerrarCarrito()
-
-}
-
-function enviarWhats(){
-
-let datos=document.getElementById("datos").innerText
-
-let url="https://wa.me/5493815441312?text="+encodeURIComponent(datos)
-
-window.open(url)
 
 }
 
