@@ -7,156 +7,193 @@
 
 <title>Tienda de Tarjetas</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <style>
 
 body{
 margin:0;
-font-family:Arial;
-background:#f4f4f4;
+font-family:'Poppins',sans-serif;
+background:url("fondo.jpg") center/cover no-repeat fixed;
 }
 
-/* HERO */
+/* CONTENEDOR PRINCIPAL */
 
-.hero{
-height:350px;
-background:url("fondo.jpg") center/cover;
+.main{
+max-width:900px;
+margin:auto;
+padding:40px 20px;
+}
+
+/* FORMULARIO CENTRADO */
+
+.formulario{
+
+max-width:400px;
+margin:auto;
+background:rgba(255,255,255,0.15);
+backdrop-filter:blur(10px);
+padding:20px;
+border-radius:12px;
+color:white;
+text-align:center;
+
+}
+
+.formulario input,
+.formulario select{
+
+width:100%;
+padding:10px;
+margin-top:10px;
+border:none;
+border-radius:6px;
+font-family:'Poppins';
+
 }
 
 /* PRODUCTOS */
 
 .container{
+
+margin-top:40px;
 display:flex;
 flex-wrap:wrap;
 justify-content:center;
 gap:25px;
-padding:30px;
+
 }
 
 .card{
-width:220px;
+
+width:280px;
 background:white;
-border-radius:12px;
-box-shadow:0 5px 15px rgba(0,0,0,0.15);
-text-align:center;
+border-radius:10px;
 overflow:hidden;
+box-shadow:0 6px 15px rgba(0,0,0,0.2);
+
 }
 
 .card img{
+
 width:100%;
+height:200px;
+object-fit:cover;
 cursor:pointer;
+
 }
 
 .card h3{
+
 margin:10px;
-font-size:16px;
+
 }
 
 .card p{
-font-weight:bold;
+
+margin:10px;
+font-weight:600;
+
 }
 
 .card button{
-margin:10px;
-padding:8px 16px;
-border-radius:20px;
-border:1px solid #25D366;
-background:white;
-color:#25D366;
-cursor:pointer;
-}
 
-.card button:hover{
+margin:10px;
+padding:10px 16px;
+border:none;
 background:#25D366;
 color:white;
+border-radius:20px;
+cursor:pointer;
+
 }
 
-/* FORMULARIO */
-
-.formulario{
-max-width:500px;
-margin:30px auto;
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,0.2);
-}
-
-.formulario input,
-.formulario select{
-width:100%;
-padding:10px;
-margin-top:10px;
-border-radius:5px;
-border:1px solid #ccc;
-}
-
-/* BOTON CARRITO */
+/* CARRITO */
 
 .botonCarrito{
+
 position:fixed;
-bottom:20px;
 right:20px;
+bottom:120px;
 background:#25D366;
 color:white;
 border:none;
-padding:15px 20px;
-border-radius:40px;
+padding:14px 20px;
+border-radius:30px;
 cursor:pointer;
-font-size:16px;
-}
 
-.contador{
-background:red;
-color:white;
-border-radius:50%;
-padding:4px 8px;
-margin-left:5px;
-font-size:12px;
 }
-
-/* CARRITO OCULTO */
 
 .carritoPanel{
+
 position:fixed;
-right:-350px;
+right:-400px;
 top:0;
 width:350px;
 height:100%;
 background:white;
 box-shadow:-4px 0 15px rgba(0,0,0,0.3);
 padding:20px;
-transition:0.4s;
-overflow:auto;
+transition:.4s;
+
 }
 
 .carritoPanel.activo{
 right:0;
 }
 
-.cerrar{
-font-size:20px;
-cursor:pointer;
-float:right;
+/* SLIDER CUADRADO FIJO */
+
+.slider{
+
+position:fixed;
+bottom:0;
+left:0;
+width:100%;
+height:220px;
+background:black;
+display:flex;
+justify-content:center;
+align-items:center;
+overflow:hidden;
+
 }
 
-/* MODAL IMAGEN */
+.slide{
+
+position:absolute;
+width:220px;
+height:220px;
+object-fit:cover;
+opacity:0;
+transition:opacity 1s;
+
+}
+
+.slide.active{
+opacity:1;
+}
+
+/* ZOOM */
 
 .modal{
+
 display:none;
 position:fixed;
-z-index:10;
-left:0;
 top:0;
+left:0;
 width:100%;
 height:100%;
 background:rgba(0,0,0,0.9);
 justify-content:center;
 align-items:center;
+
 }
 
 .modal img{
 max-width:90%;
-max-height:90%;
 }
 
 </style>
@@ -165,35 +202,55 @@ max-height:90%;
 
 <body>
 
-<div class="hero"></div>
-
-<div class="container" id="productos"></div>
+<div class="main">
 
 <div class="formulario">
 
+<h3>Datos del cliente</h3>
+
 <input id="nombre" placeholder="Nombre">
+
 <input id="apellido" placeholder="Apellido">
 
-<label>Fecha de evento</label>
+<label>Fecha evento</label>
+
 <input type="date" id="fecha">
 
-<select id="entrega">
+<select id="entrega" onchange="cambiarEntrega()">
+
 <option value="">Forma de entrega</option>
 <option value="Retiro">Retiro</option>
 <option value="Envio">Envío</option>
+
 </select>
 
-<input id="direccion" placeholder="Dirección">
+<input id="direccionEnvio" placeholder="Dirección de envío">
+
+<div id="retiroLink" style="display:none;margin-top:10px">
+
+<a href="https://maps.app.goo.gl/hrkTuMXUugitd4rM6" target="_blank">
+
+Ver dirección de retiro
+
+</a>
+
+</div>
+
+</div>
+
+<div class="container" id="productos"></div>
 
 </div>
 
 <button class="botonCarrito" onclick="abrirCarrito()">
-🛒 Carrito <span class="contador" id="contador">0</span>
+
+🛒 Carrito <span id="contador">0</span>
+
 </button>
 
 <div class="carritoPanel" id="carrito">
 
-<span class="cerrar" onclick="cerrarCarrito()">✖</span>
+<button onclick="cerrarCarrito()">Cerrar</button>
 
 <h2>Carrito</h2>
 
@@ -203,30 +260,57 @@ max-height:90%;
 
 </div>
 
+<!-- SLIDER INFERIOR -->
+
+<div class="slider">
+
+<img src="slide1.jpg" class="slide active">
+<img src="slide2.jpg" class="slide">
+<img src="slide3.jpg" class="slide">
+
+</div>
+
 <div class="modal" id="modal" onclick="cerrarImagen()">
+
 <img id="imgGrande">
+
 </div>
 
 <script>
 
-/* PRODUCTOS */
+/* SLIDER */
+
+let slides=document.querySelectorAll(".slide")
+
+let index=0
+
+setInterval(()=>{
+
+slides[index].classList.remove("active")
+
+index++
+
+if(index>=slides.length) index=0
+
+slides[index].classList.add("active")
+
+},4000)
+
+/* PRODUCTOS EXCEL */
 
 let carrito=[]
-let productos=[]
 
-fetch("productos.json")
+fetch("productos.xlsx")
 
-.then(res=>res.json())
+.then(res=>res.arrayBuffer())
 
 .then(data=>{
 
-productos=data
+let workbook=XLSX.read(data)
 
-mostrar()
+let hoja=workbook.Sheets[workbook.SheetNames[0]]
 
-})
-
-function mostrar(){
+let productos=XLSX.utils.sheet_to_json(hoja)
 
 let cont=document.getElementById("productos")
 
@@ -242,7 +326,11 @@ cont.innerHTML+=`
 
 <p>$${p.precio}</p>
 
-<button onclick="agregar('${p.nombre} - $${p.precio}')">Agregar</button>
+<button onclick="agregar('${p.nombre} - $${p.precio}')">
+
+Agregar
+
+</button>
 
 </div>
 
@@ -250,19 +338,13 @@ cont.innerHTML+=`
 
 })
 
-}
+})
 
 /* CARRITO */
 
 function agregar(prod){
 
 carrito.push(prod)
-
-actualizar()
-
-}
-
-function actualizar(){
 
 let lista=document.getElementById("lista")
 
@@ -290,38 +372,76 @@ document.getElementById("carrito").classList.remove("activo")
 
 }
 
+/* ENTREGA */
+
+function cambiarEntrega(){
+
+let tipo=document.getElementById("entrega").value
+
+if(tipo=="Retiro"){
+
+document.getElementById("direccionEnvio").style.display="none"
+
+document.getElementById("retiroLink").style.display="block"
+
+}
+
+if(tipo=="Envio"){
+
+document.getElementById("direccionEnvio").style.display="block"
+
+document.getElementById("retiroLink").style.display="none"
+
+}
+
+}
+
 /* WHATSAPP */
 
 function enviarWhats(){
 
 let nombre=document.getElementById("nombre").value
+
 let apellido=document.getElementById("apellido").value
+
 let fecha=document.getElementById("fecha").value
+
 let entrega=document.getElementById("entrega").value
-let direccion=document.getElementById("direccion").value
+
+let direccion=document.getElementById("direccionEnvio").value
 
 let texto="Cliente: "+nombre+" "+apellido+"\n"
-texto+="Fecha evento: "+fecha+"\n"
-texto+="Entrega: "+entrega+"\n"
-texto+="Direccion: "+direccion+"\n\n"
 
-texto+="Productos:\n"
+texto+="Fecha evento: "+fecha+"\n"
+
+texto+="Entrega: "+entrega+"\n"
+
+if(entrega=="Envio"){
+
+texto+="Direccion: "+direccion+"\n"
+
+}
+
+texto+="\nProductos:\n"
 
 carrito.forEach(p=>{
+
 texto+=p+"\n"
+
 })
 
-let url="https://wa.me/5493815441312?text="+encodeURIComponent(texto)
+let url="https://wa.me/5493813019415?text="+encodeURIComponent(texto)
 
 window.open(url)
 
 }
 
-/* ZOOM IMAGEN */
+/* ZOOM */
 
 function verImagen(src){
 
 document.getElementById("modal").style.display="flex"
+
 document.getElementById("imgGrande").src=src
 
 }
