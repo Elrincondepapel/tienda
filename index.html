@@ -31,48 +31,62 @@ padding:40px 20px;
 /* PRODUCTOS */
 
 .container{
-
 display:flex;
 flex-wrap:wrap;
 justify-content:center;
 gap:25px;
-
 }
 
 .card{
-
 width:280px;
 background:white;
 border-radius:10px;
 overflow:hidden;
 box-shadow:0 6px 15px rgba(0,0,0,0.2);
-
 }
 
 .card img{
-
 width:100%;
 height:200px;
 object-fit:cover;
 cursor:pointer;
-
 }
 
 .card h3{
-
 margin:10px;
-
 }
 
 .card p{
-
 margin:10px;
 font-weight:600;
-
 }
 
-.card button{
+/* CONTROLES CANTIDAD */
 
+.qty{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:10px;
+margin-bottom:10px;
+}
+
+.qty button{
+padding:5px 12px;
+border:none;
+background:#ddd;
+border-radius:5px;
+cursor:pointer;
+}
+
+.qty input{
+width:50px;
+text-align:center;
+}
+
+/* BOTON AGREGAR */
+
+.card button.add{
 margin:10px;
 padding:10px 16px;
 border:none;
@@ -80,13 +94,11 @@ background:#25D366;
 color:white;
 border-radius:20px;
 cursor:pointer;
-
 }
 
 /* FORMULARIO CLIENTE */
 
 .formulario{
-
 margin-top:60px;
 max-width:400px;
 margin-left:auto;
@@ -97,25 +109,21 @@ padding:20px;
 border-radius:12px;
 color:white;
 text-align:center;
-
 }
 
 .formulario input,
 .formulario select{
-
 width:100%;
 padding:10px;
 margin-top:10px;
 border:none;
 border-radius:6px;
 font-family:'Poppins';
-
 }
 
 /* BOTON CARRITO */
 
 .botonCarrito{
-
 position:fixed;
 right:20px;
 bottom:20px;
@@ -125,13 +133,11 @@ border:none;
 padding:14px 20px;
 border-radius:30px;
 cursor:pointer;
-
 }
 
 /* PANEL CARRITO */
 
 .carritoPanel{
-
 position:fixed;
 right:-400px;
 top:0;
@@ -141,17 +147,16 @@ background:white;
 box-shadow:-4px 0 15px rgba(0,0,0,0.3);
 padding:20px;
 transition:.4s;
-
+overflow:auto;
 }
 
 .carritoPanel.activo{
 right:0;
 }
 
-/* ZOOM IMAGEN */
+/* ZOOM */
 
 .modal{
-
 display:none;
 position:fixed;
 top:0;
@@ -161,7 +166,6 @@ height:100%;
 background:rgba(0,0,0,0.9);
 justify-content:center;
 align-items:center;
-
 }
 
 .modal img{
@@ -176,11 +180,9 @@ max-width:90%;
 
 <div class="main">
 
-<!-- PRODUCTOS -->
-
 <div class="container" id="productos"></div>
 
-<!-- DATOS CLIENTE -->
+<!-- FORMULARIO CLIENTE -->
 
 <div class="formulario">
 
@@ -228,7 +230,7 @@ Ver dirección de retiro
 
 <button onclick="cerrarCarrito()">Cerrar</button>
 
-<h2>Carrito</h2>
+<h2>Resumen del pedido</h2>
 
 <ul id="lista"></ul>
 
@@ -237,21 +239,17 @@ Ver dirección de retiro
 </div>
 
 <div class="modal" id="modal" onclick="cerrarImagen()">
-
 <img id="imgGrande">
-
 </div>
 
 <script>
 
-/* PRODUCTOS DESDE EXCEL */
+let carrito={}
 
-let carrito=[]
+/* CARGAR PRODUCTOS EXCEL */
 
 fetch("productos.xlsx")
-
 .then(res=>res.arrayBuffer())
-
 .then(data=>{
 
 let workbook=XLSX.read(data)
@@ -262,7 +260,7 @@ let productos=XLSX.utils.sheet_to_json(hoja)
 
 let cont=document.getElementById("productos")
 
-productos.forEach(p=>{
+productos.forEach((p,i)=>{
 
 cont.innerHTML+=`
 
@@ -274,7 +272,17 @@ cont.innerHTML+=`
 
 <p>$${p.precio}</p>
 
-<button onclick="agregar('${p.nombre} - $${p.precio}')">
+<div class="qty">
+
+<button onclick="menos(${i})">-</button>
+
+<input id="q${i}" value="1">
+
+<button onclick="mas(${i})">+</button>
+
+</div>
+
+<button class="add" onclick="agregar('${p.nombre}',${p.precio},${i})">
 
 Agregar
 
@@ -288,36 +296,66 @@ Agregar
 
 })
 
-/* CARRITO */
+function mas(i){
+let q=document.getElementById("q"+i)
+q.value=parseInt(q.value)+1
+}
 
-function agregar(prod){
+function menos(i){
+let q=document.getElementById("q"+i)
+if(q.value>1) q.value=parseInt(q.value)-1
+}
 
-carrito.push(prod)
+/* AGREGAR CARRITO */
+
+function agregar(nombre,precio,i){
+
+let cantidad=parseInt(document.getElementById("q"+i).value)
+
+if(carrito[nombre]){
+
+carrito[nombre].cantidad+=cantidad
+
+}else{
+
+carrito[nombre]={precio:precio,cantidad:cantidad}
+
+}
+
+actualizarCarrito()
+
+}
+
+function actualizarCarrito(){
 
 let lista=document.getElementById("lista")
 
 lista.innerHTML=""
 
-carrito.forEach(p=>{
+let total=0
 
-lista.innerHTML+="<li>"+p+"</li>"
+for(let p in carrito){
 
-})
+let item=carrito[p]
 
-document.getElementById("contador").innerText=carrito.length
+lista.innerHTML+=`<li>${p} x${item.cantidad}</li>`
+
+total+=item.cantidad
 
 }
 
+document.getElementById("contador").innerText=total
+
+}
+
+/* CARRITO */
+
 function abrirCarrito(){
-
 document.getElementById("carrito").classList.add("activo")
-
 }
 
 function cerrarCarrito(){
-
 document.getElementById("carrito").classList.remove("activo")
-
 }
 
 /* ENTREGA */
@@ -364,19 +402,15 @@ texto+="Fecha evento: "+fecha+"\n"
 
 texto+="Entrega: "+entrega+"\n"
 
-if(entrega=="Envio"){
-
-texto+="Direccion: "+direccion+"\n"
-
-}
+if(entrega=="Envio") texto+="Direccion: "+direccion+"\n"
 
 texto+="\nProductos:\n"
 
-carrito.forEach(p=>{
+for(let p in carrito){
 
-texto+=p+"\n"
+texto+=p+" x"+carrito[p].cantidad+"\n"
 
-})
+}
 
 let url="https://wa.me/5493815441312?text="+encodeURIComponent(texto)
 
