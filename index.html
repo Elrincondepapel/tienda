@@ -8,6 +8,9 @@
 <title>Tienda PRO</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
@@ -17,6 +20,8 @@ margin:0;
 font-family:'Poppins',sans-serif;
 background:url("fondo.jpg") center/cover fixed;
 }
+
+/* ESPACIO PARA FONDO */
 
 .main{
 max-width:1100px;
@@ -72,6 +77,7 @@ background:black;
 color:white;
 border:none;
 padding:6px 12px;
+cursor:pointer;
 }
 
 .qty input{
@@ -88,6 +94,7 @@ border:none;
 padding:10px;
 width:90%;
 margin:10px;
+cursor:pointer;
 }
 
 /* FORMULARIO */
@@ -96,10 +103,10 @@ margin:10px;
 margin-top:60px;
 max-width:400px;
 margin:auto;
-background:rgba(255,255,255,0.2);
+background:rgba(255,255,255,0.6);
 padding:20px;
 border-radius:10px;
-color:white;
+color:black;
 }
 
 /* CARRITO */
@@ -131,6 +138,34 @@ border:none;
 border-radius:30px;
 }
 
+/* BOTONES FLOTANTES */
+
+.floating{
+position:fixed;
+left:20px;
+bottom:20px;
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.floating a{
+width:50px;
+height:50px;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:50%;
+color:white;
+font-size:20px;
+text-decoration:none;
+}
+
+.wa{background:#25D366;}
+.fb{background:#1877f2;}
+.ig{background:#E1306C;}
+.top{background:black;}
+
 </style>
 
 </head>
@@ -151,13 +186,19 @@ border-radius:30px;
 <label>Fecha del evento</label><br>
 <input type="date" id="fecha"><br>
 
-<select id="entrega">
+<select id="entrega" onchange="cambiarEntrega()">
 <option value="">Entrega</option>
 <option value="Retiro">Retiro</option>
 <option value="Envio">Envío</option>
 </select><br>
 
-<input id="direccion" placeholder="Dirección">
+<input id="direccion" placeholder="Dirección de envío">
+
+<div id="retiroLink" style="display:none;margin-top:10px">
+<a href="https://maps.app.goo.gl/wgjL3WFK9cv3dm3N9?g_st=ac" target="_blank">
+Ver ubicación de retiro
+</a>
+</div>
 
 </div>
 
@@ -183,11 +224,33 @@ border-radius:30px;
 
 </div>
 
+<!-- BOTONES FLOTANTES -->
+
+<div class="floating">
+
+<a href="https://wa.me/5493815441312" target="_blank" class="wa">
+<i class="fab fa-whatsapp"></i>
+</a>
+
+<a href="https://www.facebook.com/people/Rinc%C3%B3n-De-Papel/pfbid0kRFgBm41ALghwQPPoMnttDJ6B1yLGtTg6cP5PQKCCkfoGWiqaTGWhFQskLmWzTxql/?rdid=OZuHdLCDkyIqivNY&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1AwXXoDEQQ%2F" target="_blank" class="fb">
+<i class="fab fa-facebook-f"></i>
+</a>
+
+<a href="https://www.instagram.com/rincondepapel_ok?igsh=MXF4cnU4OGQ0OGc5OA%3D%3D" target="_blank" class="ig">
+<i class="fab fa-instagram"></i>
+</a>
+
+<a href="#" onclick="scrollTopSmooth()" class="top">
+<i class="fas fa-arrow-up"></i>
+</a>
+
+</div>
+
 <script>
 
 let carrito={}
 
-/* PRODUCTOS DESDE EXCEL */
+/* PRODUCTOS */
 
 fetch("productos.xlsx")
 .then(res=>res.arrayBuffer())
@@ -209,9 +272,7 @@ cont.innerHTML+=`
 
 <div class="card">
 
-<div class="galeria">
-${galeria}
-</div>
+<div class="galeria">${galeria}</div>
 
 <h3>${p.nombre}</h3>
 <p>$${p.precio}</p>
@@ -243,8 +304,6 @@ function menos(i){
 let q=document.getElementById("q"+i)
 if(q.value>1) q.value=parseInt(q.value)-1
 }
-
-/* CARRITO */
 
 function agregar(nombre,precio,i){
 
@@ -280,8 +339,6 @@ dinero+=item.cantidad*item.precio
 
 }
 
-/* DATOS CLIENTE */
-
 let nombre=document.getElementById("nombre").value
 let apellido=document.getElementById("apellido").value
 let fecha=document.getElementById("fecha").value
@@ -307,7 +364,18 @@ function cerrarCarrito(){
 document.getElementById("carrito").classList.remove("activo")
 }
 
-/* WHATSAPP */
+function cambiarEntrega(){
+
+let tipo=document.getElementById("entrega").value
+
+if(tipo=="Retiro"){
+document.getElementById("direccion").style.display="none"
+document.getElementById("retiroLink").style.display="block"
+}else{
+document.getElementById("direccion").style.display="block"
+document.getElementById("retiroLink").style.display="none"
+}
+}
 
 function enviarWhats(){
 
@@ -328,10 +396,14 @@ for(let p in carrito){
 texto+=p+" x"+carrito[p].cantidad+"\n"
 }
 
-texto+="\nTotal: $"+document.getElementById("total").innerText.replace("Total: $","")
+texto+=document.getElementById("total").innerText
 
 window.open("https://wa.me/5493815441312?text="+encodeURIComponent(texto))
 
+}
+
+function scrollTopSmooth(){
+window.scrollTo({top:0,behavior:'smooth'})
 }
 
 </script>
