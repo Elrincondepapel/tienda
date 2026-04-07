@@ -135,15 +135,22 @@ cursor:pointer;
 padding-bottom:10px;
 }
 /* FORMULARIO */
-
+.formulario input{
+border-radius:8px;
+padding:12px;
+border:1px solid #ccc;
+}
 .formulario{
-margin-top:60px;
+margin:60px auto;
 max-width:400px;
-margin:auto;
-background:rgba(255,255,255,0.6);
-padding:20px;
-border-radius:10px;
+background:rgba(255,255,255,0.7);
+padding:25px;
+border-radius:12px;
 color:black;
+text-align:center; /* 👈 centra contenido */
+display:flex;
+flex-direction:column;
+gap:10px;
 }
 
 /* CARRITO */
@@ -241,6 +248,8 @@ max-width:90%;
 
 <label>Fecha del evento</label><br>
 <input type="date" id="fecha"><br>
+<label>Temática o personaje</label>
+<input id="tematica" placeholder="Ej: Spiderman, Princesas...">
 
 <select id="entrega" onchange="cambiarEntrega()">
 <option value="">Entrega</option>
@@ -445,10 +454,12 @@ let nombre=document.getElementById("nombre").value
 let apellido=document.getElementById("apellido").value
 let fecha=document.getElementById("fecha").value
 let direccion=document.getElementById("direccion").value
+let tematica=document.getElementById("tematica").value
 
 datos.innerHTML=`
 <p><b>Cliente:</b> ${nombre} ${apellido}</p>
 <p><b>Fecha del evento:</b> ${fecha}</p>
+<p><b>Temática:</b> ${tematica}</p>
 <p><b>Dirección:</b> ${direccion}</p>
 `
 
@@ -485,12 +496,20 @@ let nombre=document.getElementById("nombre").value
 let apellido=document.getElementById("apellido").value
 let fecha=document.getElementById("fecha").value
 let direccion=document.getElementById("direccion").value
+let entrega=document.getElementById("entrega").value
+let tematica=document.getElementById("tematica").value
 
 let texto="PEDIDO\n\n"
 
 texto+="Cliente: "+nombre+" "+apellido+"\n"
 texto+="Fecha del evento: "+fecha+"\n"
+texto+="Temática: "+tematica+"\n"
+
+if(entrega=="Retiro"){
+texto+="Retiro en: https://maps.app.goo.gl/wgjL3WFK9cv3dm3N9?g_st=ac\n\n"
+}else{
 texto+="Dirección: "+direccion+"\n\n"
+}
 
 texto+="Productos:\n"
 
