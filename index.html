@@ -252,6 +252,8 @@ max-width:90%;
 <input id="tematica" placeholder="Ej: Spiderman, Princesas...">
 
 <select id="entrega" onchange="cambiarEntrega()">
+<label id="labelRetiroFecha" style="display:none;">Fecha de retiro</label>
+<input type="date" id="fechaRetiro" style="display:none;">
 <option value="">Entrega</option>
 <option value="Retiro">Retiro</option>
 <option value="Envio">Envío</option>
@@ -456,11 +458,18 @@ let fecha=document.getElementById("fecha").value
 let direccion=document.getElementById("direccion").value
 let tematica=document.getElementById("tematica").value
 
+let infoEntrega = ""
+if(entrega=="Retiro"){
+texto+="📍 Tipo: Retiro en domicilio\n"
+texto+="📅 Fecha de retiro: "+fechaRetiro+"\n"
+texto+="🗺️ Ubicación: https://maps.app.goo.gl/wgjL3WFK9cv3dm3N9?g_st=ac\n\n"
+}
+
 datos.innerHTML=`
 <p><b>Cliente:</b> ${nombre} ${apellido}</p>
 <p><b>Fecha del evento:</b> ${fecha}</p>
 <p><b>Temática:</b> ${tematica}</p>
-<p><b>Dirección:</b> ${direccion}</p>
+${infoEntrega}
 `
 
 document.getElementById("contador").innerText=total
@@ -482,11 +491,21 @@ function cambiarEntrega(){
 let tipo=document.getElementById("entrega").value
 
 if(tipo=="Retiro"){
+
 document.getElementById("direccion").style.display="none"
 document.getElementById("retiroLink").style.display="block"
+
+document.getElementById("fechaRetiro").style.display="block"
+document.getElementById("labelRetiroFecha").style.display="block"
+
 }else{
+
 document.getElementById("direccion").style.display="block"
 document.getElementById("retiroLink").style.display="none"
+
+document.getElementById("fechaRetiro").style.display="none"
+document.getElementById("labelRetiroFecha").style.display="none"
+
 }
 }
 
@@ -497,7 +516,10 @@ let apellido=document.getElementById("apellido").value
 let fecha=document.getElementById("fecha").value
 let direccion=document.getElementById("direccion").value
 let entrega=document.getElementById("entrega").value
+let fechaRetiro=document.getElementById("fechaRetiro").value
+let entrega=document.getElementById("entrega").value
 let tematica=document.getElementById("tematica").value
+let fechaRetiro=document.getElementById("fechaRetiro").value
 
 let totalTexto=document.getElementById("total").innerText
 
@@ -542,8 +564,7 @@ texto+="════════════════════\n\n"
 /* FINAL */
 
 texto+="🙏✨ ¡Gracias por tu pedido!\n"
-texto+="📲 Te contactaremos a la brevedad\n"
-texto+="💖 ¡Que tengas un hermoso evento!"
+texto+="➤ El pedido se efectua con una seña mininma de $3.000\n"
 
 window.open("https://wa.me/5493815441312?text="+encodeURIComponent(texto))
 
